@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SaveHub Admin Panel</title>
+  <link rel="stylesheet" href="styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    .admin-container {
+      display: grid;
+      grid-template-columns: 250px 1fr;
+      min-height: 100vh;
+    }
+
+    .admin-sidebar {
+      background: var(--secondary-color);
+      color: white;
+      padding: 2rem 0;
+    }
+
+    .admin-sidebar h2 {
+      padding: 0 1.5rem;
+      margin-bottom: 2rem;
+      color: var(--primary-color);
+    }
+
+    .admin-menu {
+      list-style: none;
+    }
+
+    .admin-menu li {
+      padding: 1rem 1.5rem;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .admin-menu li:hover,
+    .admin-menu li.active {
+      background: rgba(255, 215, 0, 0.2);
+    }
+
+    .admin-content {
+      padding: 2rem;
+      background: var(--bg-light);
+    }
+
+    .stats-overview {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-box {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 10px;
+      box-shadow: var(--shadow);
+    }
+
+    .stat-box h3 {
+      color: var(--text-light);
+      font-size: 0.9rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .stat-box .value {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--secondary-color);
+    }
+
+    .data-table {
+      background: white;
+      border-radius: 10px;
+      padding: 1.5rem;
+      box-shadow: var(--shadow);
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 1rem;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    th {
+      font-weight: 600;
+      color: var(--secondary-color);
+      background: var(--bg-light);
+    }
+
+    .action-btn {
+      padding: 0.4rem 1rem;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      margin-right: 0.5rem;
+    }
+
+    .verify-btn {
+      background: var(--success-color);
+      color: white;
+    }
+
+    .suspend-btn {
+      background: var(--danger-color);
+      color: white;
+    }
+
+    .view-btn {
+      background: var(--secondary-color);
+      color: white;
+    }
+
+    .status-badge {
+      padding: 0.3rem 0.8rem;
+      border-radius: 15px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .status-active {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .status-pending {
+      background: #fff3cd;
+      color: #856404;
+    }
+
+    .status-suspended {
+      background: #f8d7da;
+      color: #721c24;
+    }
+  </style>
+</head>
+<body>
+  <div class="admin-container">
+    <aside class="admin-sidebar">
+      <h2>💰 SaveHub Admin</h2>
+      <ul class="admin-menu">
+        <li class="active" onclick="showAdminSection('dashboard')">📊 Dashboard</li>
+        <li onclick="showAdminSection('users')">👥 Users</li>
+        <li onclick="showAdminSection('hives')">🏘️ Hives</li>
+        <li onclick="showAdminSection('transactions')">💳 Transactions</li>
+        <li onclick="window.location.href='index.html'">← Back to App</li>
+      </ul>
+    </aside>
+
+    <main class="admin-content">
+      <!-- Dashboard Section -->
+      <section id="dashboard-section" class="admin-section active">
+        <h1>Dashboard Overview</h1>
+        
+        <div class="stats-overview">
+          <div class="stat-box">
+            <h3>Total Users</h3>
+            <div class="value" id="total-users">0</div>
+          </div>
+          <div class="stat-box">
+            <h3>Verified Users</h3>
+            <div class="value" id="verified-users">0</div>
+          </div>
+          <div class="stat-box">
+            <h3>Active Hives</h3>
+            <div class="value" id="active-hives">0</div>
+          </div>
+          <div class="stat-box">
+            <h3>Total Volume</h3>
+            <div class="value" id="total-volume">$0</div>
+          </div>
+          <div class="stat-box">
+            <h3>Transactions</h3>
+            <div class="value" id="total-transactions">0</div>
+          </div>
+        </div>
+
+        <div class="data-table">
+          <h2>Recent Users</h2>
+          <table id="recent-users-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Country</th>
+                <th>Verified</th>
+                <th>Joined</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Recent users will be loaded here -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Users Section -->
+      <section id="users-section" class="admin-section">
+        <h1>User Management</h1>
+        
+        <div class="data-table">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
+            <input type="text" id="user-search" placeholder="Search users..." style="padding: 0.5rem; width: 300px; border: 1px solid var(--border-color); border-radius: 5px;">
+            <button class="btn-primary" onclick="searchUsers()">Search</button>
+          </div>
+          
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Country</th>
+                <th>Status</th>
+                <th>Verified</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="users-table-body">
+              <!-- Users will be loaded here -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Hives Section -->
+      <section id="hives-section" class="admin-section">
+        <h1>Hives Management</h1>
+        
+        <div class="data-table">
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Amount</th>
+                <th>Members</th>
+                <th>Status</th>
+                <th>Pool</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="hives-table-body">
+              <!-- Hives will be loaded here -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Transactions Section -->
+      <section id="transactions-section" class="admin-section">
+        <h1>Transactions</h1>
+        
+        <div class="data-table">
+          <table>
+            <thead>
+              <tr>
+                <th>User</th>
+                <th>Hive</th>
+                <th>Type</th>
+                <th>Amount</th>
+                <th>Status</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody id="transactions-table-body">
+              <!-- Transactions will be loaded here -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="notification" class="notification"></div>
+
+  <script>
+    const API_URL = 'http://localhost:5000/api';
+    let authToken = localStorage.getItem('authToken');
+
+    if (!authToken) {
+      window.location.href = 'index.html';
+    }
+
+    function showAdminSection(section) {
+      document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
+      document.getElementById(section + '-section').classList.add('active');
+      
+      document.querySelectorAll('.admin-menu li').forEach(li => li.classList.remove('active'));
+      event.target.classList.add('active');
+
+      switch(section) {
+        case 'dashboard':
+          loadDashboard();
+          break;
+        case 'users':
+          loadUsers();
+          break;
+        case 'hives':
+          loadHives();
+          break;
+        case 'transactions':
+          loadTransactions();
+          break;
+      }
+    }
+
+    async function apiCall(endpoint, method = 'GET', body = null) {
+      const options = {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`
+        }
+      };
+
+      if (body) {
+        options.body = JSON.stringify(body);
+      }
+
+      const response = await fetch(`${API_URL}${endpoint}`, options);
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'API request failed');
+      }
+
+      return data;
+    }
+
+    async function loadDashboard() {
+      try {
+        const stats = await apiCall('/admin/stats');
+        
+        document.getElementById('total-users').textContent = stats.users.total;
+        document.getElementById('verified-users').textContent = stats.users.verified;
+        document.getElementById('active-hives').textContent = stats.hives.active;
+        document.getElementById('total-volume').textContent = `$${stats.transactions.volume.toFixed(2)}`;
+        document.getElementById('total-transactions').textContent = stats.transactions.count;
+
+        const tbody = document.querySelector('#recent-users-table tbody');
+        tbody.innerHTML = stats.users.recent.map(user => `
+          <tr>
+            <td>${user.firstName} ${user.lastName}</td>
+            <td>${user.email}</td>
+            <td>${user.country}</td>
+            <td>${user.isVerified ? '✅' : '❌'}</td>
+            <td>${new Date(user.createdAt).toLocaleDateString()}</td>
+          </tr>
+        `).join('');
+      } catch (error) {
+        console.error('Error loading dashboard:', error);
+      }
+    }
+
+    async function loadUsers() {
+      try {
+        const data = await apiCall('/admin/users');
+        const tbody = document.getElementById('users-table-body');
+        
+        tbody.innerHTML = data.users.map(user => `
+          <tr>
+            <td>${user.firstName} ${user.lastName}</td>
+            <td>${user.email}</td>
+            <td>${user.country}</td>
+            <td><span class="status-badge status-${user.status}">${user.status}</span></td>
+            <td>${user.isVerified ? '✅ Verified' : '❌ Not Verified'}</td>
+            <td>
+              ${!user.isVerified ? `<button class="action-btn verify-btn" onclick="verifyUser('${user._id}')">Verify</button>` : ''}
+              ${user.status !== 'suspended' ? `<button class="action-btn suspend-btn" onclick="suspendUser('${user._id}')">Suspend</button>` : ''}
+            </td>
+          </tr>
+        `).join('');
+      } catch (error) {
+        console.error('Error loading users:', error);
+      }
+    }
+
+    async function verifyUser(userId) {
+      try {
+        await apiCall(`/admin/users/${userId}/verify`, 'PUT');
+        showNotification('User verified successfully', 'success');
+        loadUsers();
+      } catch (error) {
+        showNotification(error.message, 'error');
+      }
+    }
+
+    async function suspendUser(userId) {
+      if (!confirm('Are you sure you want to suspend this user?')) return;
+      
+      try {
+        await apiCall(`/admin/users/${userId}/suspend`, 'PUT');
+        showNotification('User suspended successfully', 'success');
+        loadUsers();
+      } catch (error) {
+        showNotification(error.message, 'error');
+      }
+    }
+
+    async function loadHives() {
+      try {
+        const data = await apiCall('/admin/hives');
+        const tbody = document.getElementById('hives-table-body');
+        
+        tbody.innerHTML = data.hives.map(hive => `
+          <tr>
+            <td>${hive.name}</td>
+            <td>${hive.type}</td>
+            <td>$${hive.contributionAmount}</td>
+            <td>${hive.members.length}/${hive.maxMembers}</td>
+            <td><span class="status-badge status-${hive.status}">${hive.status}</span></td>
+            <td>$${hive.poolAmount}</td>
+            <td>
+              ${hive.status !== 'cancelled' ? `<button class="action-btn suspend-btn" onclick="cancelHive('${hive._id}')">Cancel</button>` : ''}
+            </td>
+          </tr>
+        `).join('');
+      } catch (error) {
+        console.error('Error loading hives:', error);
+      }
+    }
+
+    async function cancelHive(hiveId) {
+      if (!confirm('Are you sure you want to cancel this hive?')) return;
+      
+      try {
+        await apiCall(`/admin/hives/${hiveId}/cancel`, 'PUT');
+        showNotification('Hive cancelled successfully', 'success');
+        loadHives();
+      } catch (error) {
+        showNotification(error.message, 'error');
+      }
+    }
+
+    async function loadTransactions() {
+      try {
+        const data = await apiCall('/admin/transactions');
+        const tbody = document.getElementById('transactions-table-body');
+        
+        tbody.innerHTML = data.transactions.map(txn => `
+          <tr>
+            <td>${txn.user.firstName} ${txn.user.lastName}</td>
+            <td>${txn.hive?.name || 'N/A'}</td>
+            <td>${txn.type}</td>
+            <td>$${txn.amount}</td>
+            <td><span class="status-badge status-${txn.status}">${txn.status}</span></td>
+            <td>${new Date(txn.createdAt).toLocaleString()}</td>
+          </tr>
+        `).join('');
+      } catch (error) {
+        console.error('Error loading transactions:', error);
+      }
+    }
+
+    function showNotification(message, type = 'info') {
+      const notification = document.getElementById('notification');
+      notification.textContent = message;
+      notification.className = `notification show ${type}`;
+      
+      setTimeout(() => {
+        notification.classList.remove('show');
+      }, 3000);
+    }
+
+    // Load dashboard on page load
+    loadDashboard();
+  </script>
+</body>
+</html>
